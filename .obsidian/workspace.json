@@ -28,14 +28,15 @@
               "type": "markdown",
               "state": {
                 "file": "02-Areas/llm/llm.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
               "title": "llm"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -195,11 +196,11 @@
       "bases:Create new base": false
     }
   },
-  "active": "0133c5bf5de10382",
+  "active": "dc34f1d4375d3ffd",
   "lastOpenFiles": [
+    "00-Index/AI Engineer roadmap.md",
     "02-Areas/llm/llm.md",
     "02-Areas/ai-development/AI driven development.md",
-    "00-Index/AI Engineer roadmap.md",
     "02-Areas/ai-development",
     "02-Areas/agents/agent-architecture.md",
     "02-Areas/llm",
