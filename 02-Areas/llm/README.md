@@ -168,5 +168,3 @@ Each file is self-contained but references other modules when needed. Prerequisi
 **Last Updated**: 2026-06-21  
 **Difficulty Progression**: Beginner → Intermediate → Advanced  
 **Total Time**: ~4-6 hours for complete read with examples
-
-**Start with [Module 1: What is an LLM?](01-what-is-an-llm.md) →**
