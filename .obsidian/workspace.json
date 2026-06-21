@@ -28,7 +28,7 @@
               "type": "markdown",
               "state": {
                 "file": "02-Areas/llm/llm.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
@@ -110,16 +110,17 @@
             "state": {
               "type": "backlink",
               "state": {
-                "collapseAll": false,
+                "file": "02-Areas/llm/llm.md",
+                "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
                 "searchQuery": "",
                 "backlinkCollapsed": false,
-                "unlinkedCollapsed": true
+                "unlinkedCollapsed": false
               },
               "icon": "links-coming-in",
-              "title": "Backlinks"
+              "title": "Backlinks for llm"
             }
           },
           {
@@ -170,15 +171,17 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "02-Areas/llm/llm.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline"
+              "title": "Outline of llm"
             }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",

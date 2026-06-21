@@ -24,7 +24,7 @@ Welcome to the 26-week journey to becoming a 100× AI Engineer! Use this tracker
 	
 - [x] **2.1** What an LLM actually is
 - [x] **2.2** How an LLM thinks
-- [ ] **2.3** Reasoning models vs base models
+- [x] **2.3** Reasoning models vs base models
 - [ ] **2.4** Reading model evals & benchmarks
 - [ ] **2.5** Comparing the major models
 
