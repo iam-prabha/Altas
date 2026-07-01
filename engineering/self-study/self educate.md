@@ -1,6 +1,6 @@
 # How to teach yourself anything?
 
-> Before you in anything:
+> Before you doing anything:
 > - Answer these questions first: what will i be able to do that i can't do now? And how will i prove it?
 
 1. start try to build simple app, shoot 20-30 pic and edit it then see if it good/bad. the result not good so find others resources.

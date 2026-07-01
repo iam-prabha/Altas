@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 1: RAG from Scratch</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<p class="lesson-meta">
+  <span class="lesson-number">Lesson 1</span> &middot; ~50 min
+</p>
+
+<h1>RAG from Scratch</h1>
+
+<p class="text-muted mb-2">Build your first working Retrieval-Augmented Generation pipeline &mdash; with no frameworks, just Python.</p>
+
+<h2>What you&rsquo;ll build</h2>
+<p>By the end of this lesson you&rsquo;ll have a <code>rag.py</code> that:</p>
+<ol>
+  <li>Loads a document and <strong>chunks</strong> it</li>
+  <li>Turns each chunk into an <strong>embedding</strong> (a vector)</li>
+  <li><strong>Searches</strong> those vectors to find relevant chunks for your question</li>
+  <li><strong>Generates</strong> an answer using an LLM with the retrieved context</li>
+</ol>
+
+<h2>What is RAG?</h2>
+<p><strong>Retrieval-Augmented Generation</strong> is a pattern that gives an LLM access to external knowledge at inference time. Instead of answering from its training data alone, the model first retrieves relevant documents, then generates an answer grounded in those documents.</p>
+
+<blockquote>
+  Think of it as giving the LLM an open-book exam: it can look up facts before answering. Without RAG, it&rsquo;s answering from memory alone &mdash; which is why it hallucinates or gives outdated information.
+</blockquote>
+
+<p>The three steps every RAG system follows:</p>
+
+<table>
+  <tr>
+    <th>Step</th>
+    <th>Name</th>
+    <th>What happens</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><strong>Index</strong></td>
+    <td>Split documents into chunks, embed each chunk into a vector, store in a searchable index</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><strong>Retrieve</strong></td>
+    <td>Embed the user&rsquo;s query, find the most similar chunks via vector search</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><strong>Generate</strong></td>
+    <td>Feed the query + retrieved chunks to an LLM, get a grounded answer</td>
+  </tr>
+</table>
+
+<p class="sidenote">This is called &ldquo;Naive RAG&rdquo; — just the three steps in sequence. More advanced variants add pre/post-processing, but this is the core every system builds on.</p>
+
+<div class="callout">
+  <strong>Interview prep:</strong> You&rsquo;ll often be asked to &ldquo;walk through how a RAG system works.&rdquo; The Index → Retrieve → Generate framework is your mental model. Know it cold.
+</div>
+
+<hr>
+
+<h2>Setup</h2>
+<p>Install dependencies:</p>
+<pre><code>pip install sentence-transformers faiss-cpu numpy openai requests</code></pre>
+
+<p>If you want to use a local LLM, install <a href="https://ollama.ai/">Ollama</a> and pull a model:</p>
+<pre><code>ollama pull llama3.2</code></pre>
+
+<p>Create a file called <code>sample.txt</code> with any text you want to query against. Here&rsquo;s a short one to start:</p>
+<pre><code>Retrieval-Augmented Generation (RAG) is a technique that combines
+information retrieval with text generation. It works by first retrieving
+relevant documents from a knowledge base, then feeding those documents
+as context to a language model to generate a grounded response.
+
+One of the key advantages of RAG is that it reduces hallucinations by
+grounding the model's output in retrieved evidence. It also enables
+the system to access up-to-date information without retraining.
+
+RAG systems typically use embeddings to represent documents and
+queries as vectors, then perform similarity search to find the most
+relevant documents for a given query. The retrieved documents are
+then concatenated with the query and passed to the LLM for generation.</code></pre>
+
+<hr>
+
+<h2>Step 1: Chunking</h2>
+
+<div class="step">
+  <span class="step-number">Step 1</span>
+  <p>Documents are too long to fit in an LLM&rsquo;s context window. We split them into smaller pieces (chunks) that can be retrieved and fed to the model.</p>
+  <p>A simple chunking strategy: split by character count with overlap so no meaning is lost at boundaries.</p>
+
+  <pre><code>def chunk_text(text, chunk_size=500, overlap=50):
+    chunks = []
+    start = 0
+    while start &lt; len(text):
+        end = min(start + chunk_size, len(text))
+        chunks.append(text[start:end])
+        start += chunk_size - overlap
+    return chunks
+
+with open("sample.txt") as f:
+    text = f.read()
+
+chunks = chunk_text(text)
+print(f"Split into {len(chunks)} chunks")
+for i, c in enumerate(chunks):
+    print(f"--- Chunk {i} ({len(c)} chars) ---")
+    print(c[:100] + "...")</code></pre>
+</div>
+
+<h2>Step 2: Embeddings</h2>
+
+<div class="step">
+  <span class="step-number">Step 2</span>
+  <p>Computers don&rsquo;t understand text &mdash; they understand numbers. An <strong>embedding</strong> is a list of numbers (a vector) that captures the <em>meaning</em> of a piece of text. Similar texts have similar vectors.</p>
+
+  <pre><code>from sentence_transformers import SentenceTransformer
+
+# Load a small, fast embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Turn chunks into vectors
+chunk_embeddings = model.encode(chunks)
+print(f"Embedding shape: {chunk_embeddings.shape}")
+# (num_chunks, 384) — each chunk becomes a 384-dimensional vector</code></pre>
+
+  <p class="sidenote"><code>all-MiniLM-L6-v2</code> is a popular embedding model. It&rsquo;s small (80 MB), fast, and gives decent quality. You can swap it for stronger models (e.g., <code>BAAI/bge-large-en-v1.5</code>) later.</p>
+</div>
+
+<h2>Step 3: Vector Search with FAISS</h2>
+
+<div class="step">
+  <span class="step-number">Step 3</span>
+  <p>Now we need to find the chunks most relevant to a user&rsquo;s question. We embed the question, then find the chunks whose vectors are closest to it. FAISS (Facebook AI Similarity Search) does this efficiently.</p>
+
+  <pre><code>import faiss
+import numpy as np
+
+# Build a FAISS index
+dimension = chunk_embeddings.shape[1]  # 384
+index = faiss.IndexFlatL2(dimension)
+index.add(chunk_embeddings)
+
+def retrieve(query, k=2):
+    # Embed the query
+    query_vec = model.encode([query])
+    # Search
+    distances, indices = index.search(query_vec, k)
+    results = [chunks[i] for i in indices[0]]
+    return results
+
+# Try it!
+query = "How does RAG reduce hallucinations?"
+results = retrieve(query)
+print("Retrieved chunks:")
+for r in results:
+    print(f"  • {r[:80]}...")</code></pre>
+
+  <p>L2 (Euclidean distance) is the simplest similarity metric. In practice, <strong>cosine similarity</strong> is more common for text embeddings &mdash; we&rsquo;ll cover that in a later lesson.</p>
+</div>
+
+<h2>Step 4: Generation</h2>
+
+<div class="step">
+  <span class="step-number">Step 4</span>
+  <p>Finally, we feed the retrieved context + the original question to an LLM. The LLM uses the context to generate a grounded answer.</p>
+
+  <p><strong>Option A: Ollama (local, free)</strong></p>
+  <pre><code>import requests
+import json
+
+def generate_ollama(query, context, model="llama3.2"):
+    prompt = f"""Answer the question using ONLY the provided context.
+
+Context:
+{chr(10).join(context)}
+
+Question: {query}
+
+Answer:"""
+    response = requests.post("http://localhost:11434/api/generate",
+        json={"model": model, "prompt": prompt, "stream": False})
+    return response.json()["response"]
+
+# Usage
+context = retrieve(query)
+answer = generate_ollama(query, context)
+print("Answer:", answer)</code></pre>
+
+  <p><strong>Option B: OpenAI API</strong></p>
+  <pre><code>from openai import OpenAI
+
+client = OpenAI()  # requires OPENAI_API_KEY env var
+
+def generate_openai(query, context, model="gpt-4o-mini"):
+    prompt = f"Answer the question using ONLY the provided context.\n\nContext:\n{chr(10).join(context)}\n\nQuestion: {query}\n\nAnswer:"
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content
+
+# Usage
+answer = generate_openai(query, context)
+print("Answer:", answer)</code></pre>
+
+  <p class="sidenote">The prompt instructs the LLM to &ldquo;answer using ONLY the provided context.&rdquo; This is critical — without it, the model may fall back on its training data and hallucinate.</p>
+</div>
+
+<h2>Putting It All Together</h2>
+<p>Here&rsquo;s the full <code>rag.py</code>:</p>
+<pre><code>import requests
+import json
+import os
+import numpy as np
+from sentence_transformers import SentenceTransformer
+import faiss
+
+# --- Step 1: Load & Chunk ---
+def load_and_chunk(path, chunk_size=500, overlap=50):
+    with open(path) as f:
+        text = f.read()
+    chunks = []
+    start = 0
+    while start &lt; len(text):
+        end = min(start + chunk_size, len(text))
+        chunks.append(text[start:end])
+        start += chunk_size - overlap
+    return chunks
+
+# --- Step 2: Embed ---
+print("Loading embedding model...")
+model = SentenceTransformer("all-MiniLM-L6-v2")
+chunks = load_and_chunk("sample.txt")
+chunk_embeddings = model.encode(chunks)
+print(f"Indexing {len(chunks)} chunks...")
+
+# --- Step 3: Index & Search ---
+dimension = chunk_embeddings.shape[1]
+index = faiss.IndexFlatL2(dimension)
+index.add(chunk_embeddings)
+
+def retrieve(query, k=2):
+    query_vec = model.encode([query])
+    distances, indices = index.search(query_vec, k)
+    return [chunks[i] for i in indices[0]]
+
+# --- Step 4: Generate ---
+def generate(query, context, backend="ollama"):
+    if backend == "ollama":
+        prompt = f"Answer using ONLY the context.\n\nContext:\n{chr(10).join(context)}\n\nQuestion: {query}\n\nAnswer:"
+        resp = requests.post("http://localhost:11434/api/generate",
+            json={"model": "llama3.2", "prompt": prompt, "stream": False})
+        return resp.json()["response"]
+    else:
+        from openai import OpenAI
+        client = OpenAI()
+        prompt = f"Answer using ONLY the context.\n\nContext:\n{chr(10).join(context)}\n\nQuestion: {query}\n\nAnswer:"
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return resp.choices[0].message.content
+
+# --- Run ---
+if __name__ == "__main__":
+    query = input("Ask a question about your document: ")
+    context = retrieve(query)
+    print("\\n--- Retrieved Context ---")
+    for c in context:
+        print(f"  • {c[:100]}...")
+    print("\\n--- Generating Answer ---")
+    answer = generate(query, context, backend="ollama")  # change to "openai" if preferred
+    print(f"\\nAnswer: {answer}")</code></pre>
+
+<hr>
+
+<h2>Check Your Understanding</h2>
+
+<div class="quiz" data-correct="1">
+  <h3>Quiz 1: Three Steps</h3>
+  <p>What are the three steps of a naive RAG pipeline, in order?</p>
+  <button class="quiz-option">Retrieve → Embed → Generate</button>
+  <button class="quiz-option">Index → Retrieve → Generate</button>
+  <button class="quiz-option">Generate → Retrieve → Index</button>
+  <button class="quiz-option">Chunk → Search → Answer</button>
+  <div class="quiz-feedback" data-correct="✓ Correct! Index, Retrieve, Generate." data-wrong="✗ The correct order is Index (prepare data), Retrieve (find relevant docs), Generate (answer with context)." data-explain=""></div>
+</div>
+
+<div class="quiz" data-correct="1">
+  <h3>Quiz 2: Why Chunk?</h3>
+  <p>Why do we chunk documents in a RAG system?</p>
+  <button class="quiz-option">To reduce file size on disk</button>
+  <button class="quiz-option">To fit within the LLM&rsquo;s context window and retrieve precisely</button>
+  <button class="quiz-option">To make embedding faster</button>
+  <button class="quiz-option">To encrypt the content</button>
+  <div class="quiz-feedback" data-correct="✓ Correct! Chunking lets us retrieve the most relevant pieces while staying within the LLM's context window." data-wrong="✗ We chunk so we can retrieve specific relevant passages and fit them in the LLM's limited context window."></div>
+</div>
+
+<div class="quiz" data-correct="2">
+  <h3>Quiz 3: Embeddings</h3>
+  <p>What is an embedding?</p>
+  <button class="quiz-option">A summary of a document</button>
+  <button class="quiz-option">A keyword index of the text</button>
+  <button class="quiz-option">A vector of numbers capturing the meaning of text</button>
+  <button class="quiz-option">A compressed version of the original text</button>
+  <div class="quiz-feedback" data-correct="✓ Correct! An embedding is a dense vector that represents semantic meaning." data-wrong="✗ An embedding is a vector (list of numbers) that captures the semantic meaning of text. Similar texts have similar vectors."></div>
+</div>
+
+<hr>
+
+<h2>Your Turn</h2>
+<ol>
+  <li><strong>Run the code.</strong> Save the full script as <code>rag.py</code>, make sure <code>sample.txt</code> is in the same directory, and run <code>python rag.py</code>.</li>
+  <li><strong>Ask a question.</strong> Start with &ldquo;How does RAG reduce hallucinations?&rdquo; &mdash; the answer should be in your document.</li>
+  <li><strong>Try your own document.</strong> Replace <code>sample.txt</code> with any text file you have. See how the answers change.</li>
+  <li><strong>Experiment.</strong> Change <code>chunk_size</code> and <code>k</code> (number of retrieved chunks). How does it affect the answer quality?</li>
+</ol>
+
+<div class="callout">
+  <strong>Already stuck? Ask your teacher.</strong> Type a follow-up question in the chat — I&rsquo;m here to help you through any confusion.
+</div>
+
+<h2>Further Reading</h2>
+<ul>
+  <li><a href="../reference/glossary.html">RAG Glossary</a> — all the terms introduced in this lesson, with definitions</li>
+  <li>Original paper: <a href="https://arxiv.org/abs/2005.11401">Lewis et al. &ldquo;Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks&rdquo;</a></li>
+  <li><code>sentence-transformers</code> docs: <a href="https://www.sbert.net/">sbert.net</a></li>
+  <li>FAISS docs: <a href="https://faiss.ai/">faiss.ai</a></li>
+  <li><a href="https://www.pinecone.io/learn/rag/">Pinecone&rsquo;s RAG guide</a> — visual walkthrough of each component</li>
+</ul>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

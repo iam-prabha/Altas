@@ -1,0 +1,284 @@
+/* ==============================
+   RAG Teaching Workspace — Shared Stylesheet
+   Tufte-inspired typography for lessons and reference docs
+   ============================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #fffff8;
+  --text: #111;
+  --muted: #6a6a6a;
+  --accent: #2a6f97;
+  --accent-light: #e6f0f8;
+  --line: #d8d8d8;
+  --code-bg: #f8f8f6;
+  --code-border: #e8e8e6;
+  --highlight: #fff3bf;
+  --radius: 6px;
+  --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', 'Fira Code', 'Fira Mono', Consolas, monospace;
+  --max-width: 720px;
+  --side-width: 180px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 18px; line-height: 1.6; }
+
+body {
+  font-family: var(--font-serif);
+  color: var(--text);
+  background: var(--bg);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  counter-reset: sidenote-counter;
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+h1 { font-size: 2rem; margin-top: 0.5rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.4rem; color: var(--accent); border-bottom: 1px solid var(--line); padding-bottom: 0.3rem; }
+h3 { font-size: 1.1rem; }
+h4 { font-size: 1rem; }
+
+p, li { margin-bottom: 0.75rem; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Lesson header */
+.lesson-meta {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lesson-number {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Code blocks */
+code, pre {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+
+code {
+  background: var(--code-bg);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-size: 0.82rem;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Inline callouts */
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-light);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 0.9rem;
+}
+
+.callout strong { color: var(--accent); }
+
+/* Steps / numbered sections */
+.step {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.step h3 { margin-top: 0; }
+
+.step-number {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  margin-bottom: 0.5rem;
+}
+
+/* Quiz widget */
+.quiz {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.quiz h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.quiz-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  margin: 0.4rem 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quiz-option:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.quiz-option.correct {
+  border-color: #2b8a3e;
+  background: #ebfbee;
+}
+
+.quiz-option.wrong {
+  border-color: #c92a2a;
+  background: #fff5f5;
+}
+
+.quiz-option:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+.quiz-feedback {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  display: none;
+}
+
+.quiz-feedback.show {
+  display: block;
+}
+
+.quiz-feedback.correct {
+  background: #ebfbee;
+  color: #2b8a3e;
+}
+
+.quiz-feedback.wrong {
+  background: #fff5f5;
+  color: #c92a2a;
+}
+
+/* Blockquote */
+blockquote {
+  border-left: 3px solid var(--line);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Lists */
+ul, ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+li { margin-bottom: 0.3rem; }
+
+/* Images */
+img { max-width: 100%; border-radius: var(--radius); }
+
+/* Sidenotes (small screens fallback to inline) */
+.sidenote {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--muted);
+  border-left: 2px solid var(--line);
+  padding-left: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.sidenote::before {
+  counter-increment: sidenote-counter;
+  content: counter(sidenote-counter) '. ';
+  font-weight: 600;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+}
+
+th, td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  font-weight: 600;
+  background: var(--code-bg);
+}
+
+/* Utility */
+.text-muted { color: var(--muted); }
+.text-sm { font-size: 0.85rem; }
+.text-center { text-align: center; }
+.mt-1 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 2rem; }
+
+/* Print */
+@media print {
+  body { padding: 0.5in; font-size: 11pt; }
+  .quiz-option { break-inside: avoid; }
+  pre { break-inside: avoid; }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  html { font-size: 16px; }
+  body { padding: 1rem; }
+  .step { padding: 0.75rem; }
+}

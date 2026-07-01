@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Glossary</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<p class="lesson-meta"><span class="lesson-number">Reference</span></p>
+<h1>RAG Glossary</h1>
+<p class="text-muted mb-2">Key terms introduced across lessons, defined for quick reference.</p>
+
+<h2>A</h2>
+
+<dl>
+  <dt><strong>Augmentation</strong></dt>
+  <dd>The step where retrieved document chunks are combined with the user's query to form a prompt for the LLM. The "Augmented" in RAG.</dd>
+</dl>
+
+<h2>C</h2>
+
+<dl>
+  <dt><strong>Chunk</strong></dt>
+  <dd>A small piece of text that a document is split into during indexing. Chunks should be large enough to contain meaningful information but small enough to fit in the LLM's context window.</dd>
+
+  <dt><strong>Chunk Overlap</strong></dt>
+  <dd>The number of characters shared between consecutive chunks to prevent information loss at chunk boundaries. Typical overlap: 10–20% of chunk size.</dd>
+
+  <dt><strong>Chunk Size</strong></dt>
+  <dd>The maximum length (in characters or tokens) of each chunk. Common sizes: 256–1024 tokens depending on the use case.</dd>
+
+  <dt><strong>Context Window</strong></dt>
+  <dd>The maximum number of tokens an LLM can process in a single request. GPT-4o-mini has a 128k token context window; smaller models may have 4k–32k. Larger context windows reduce the need for aggressive chunking but increase cost and latency.</dd>
+
+  <dt><strong>Cosine Similarity</strong></dt>
+  <dd>A measure of similarity between two vectors (range: -1 to 1) calculated as the cosine of the angle between them. Commonly used in text embedding search instead of L2 distance.</dd>
+</dl>
+
+<h2>E</h2>
+
+<dl>
+  <dt><strong>Embedding</strong></dt>
+  <dd>A dense vector (list of floating-point numbers) that represents the semantic meaning of a piece of text. Similar texts produce vectors close to each other in the vector space. Created by an embedding model (e.g., <code>all-MiniLM-L6-v2</code>).</dd>
+
+  <dt><strong>Embedding Model</strong></dt>
+  <dd>A neural network trained to map text to vectors such that semantically similar texts are close in vector space. Popular models: <code>all-MiniLM-L6-v2</code> (384 dimensions), <code>BAAI/bge-large-en-v1.5</code> (1024 dimensions), OpenAI <code>text-embedding-3-small</code>.</dd>
+</dl>
+
+<h2>F</h2>
+
+<dl>
+  <dt><strong>FAISS</strong></dt>
+  <dd>Facebook AI Similarity Search — a library for efficient vector similarity search and clustering. Supports L2, cosine, and dot-product distance metrics, with GPU acceleration and disk-based indexes for billion-scale datasets.</dd>
+</dl>
+
+<h2>H</h2>
+
+<dl>
+  <dt><strong>Hallucination</strong></dt>
+  <dd>When an LLM generates factually incorrect or fabricated information. RAG reduces hallucinations by grounding the model's output in retrieved evidence.</dd>
+
+  <dt><strong>Hybrid Search</strong></dt>
+  <dd>A retrieval strategy that combines vector (semantic) search with keyword (lexical) search to get the best of both approaches. Typical approach: BM25 + vector search with reciprocal rank fusion.</dd>
+</dl>
+
+<h2>I</h2>
+
+<dl>
+  <dt><strong>Index</strong></dt>
+  <dd>(Verb) The process of preparing documents for retrieval: chunking + embedding + storing vectors. (Noun) The data structure (e.g., FAISS index) that enables fast similarity search.</dd>
+</dl>
+
+<h2>L</h2>
+
+<dl>
+  <dt><strong>L2 Distance</strong></dt>
+  <dd>Euclidean distance between two vectors. The most basic similarity metric. Smaller L2 distance = more similar vectors.</dd>
+
+  <dt><strong>LLM</strong></dt>
+  <dd>Large Language Model — the text generation component in RAG. Given a prompt with context, it produces a grounded answer.</dd>
+</dl>
+
+<h2>N</h2>
+
+<dl>
+  <dt><strong>Naive RAG</strong></dt>
+  <dd>The simplest RAG architecture: Index → Retrieve → Generate in a straight line. No query rewriting, reranking, or iterative retrieval. The starting point for all RAG systems.</dd>
+</dl>
+
+<h2>O</h2>
+
+<dl>
+  <dt><strong>Ollama</strong></dt>
+  <dd>A tool for running LLMs locally. Supports models like Llama 3.2, Mistral, and Qwen. Exposes a REST API at <code>localhost:11434</code>.</dd>
+</dl>
+
+<h2>R</h2>
+
+<dl>
+  <dt><strong>RAG</strong></dt>
+  <dd>Retrieval-Augmented Generation — a system architecture where an LLM generates answers grounded in documents retrieved from an external knowledge base. Reduces hallucinations and enables access to up-to-date information.</dd>
+
+  <dt><strong>Reranking</strong></dt>
+  <dd>A post-retrieval step where initially retrieved chunks are re-scored by a more accurate (but slower) model to improve result quality. Common in Advanced RAG pipelines.</dd>
+
+  <dt><strong>Retrieval</strong></dt>
+  <dd>The step of finding the most relevant document chunks for a given query. Typically done by embedding the query and performing nearest-neighbor search in the vector index.</dd>
+</dl>
+
+<h2>S</h2>
+
+<dl>
+  <dt><strong>Sentence Transformers</strong></dt>
+  <dd>A Python library providing pre-trained embedding models. <code>SentenceTransformer</code> class loads models and encodes text into vectors.</dd>
+
+  <dt><strong>Similarity Search</strong></dt>
+  <dd>The core retrieval operation: given a query vector, find the closest vectors in the index by some distance metric (L2, cosine, dot product).</dd>
+</dl>
+
+<h2>V</h2>
+
+<dl>
+  <dt><strong>Vector</strong></dt>
+  <dd>A list of numbers (e.g., 384 floats) representing a piece of text in semantic space. Generated by an embedding model.</dd>
+
+  <dt><strong>Vector Database</strong></dt>
+  <dd>A database optimized for storing and searching vectors. Examples: FAISS (in-memory), Chroma, Pinecone, Weaviate, Qdrant, pgvector. Chosen based on scale, latency, and operational requirements.</dd>
+</dl>
+
+<h2>See Also</h2>
+<ul>
+  <li><a href="../lessons/0001-rag-from-scratch.html">Lesson 1: RAG from Scratch</a></li>
+  <li><a href="../RESOURCES.md">Resources</a> — papers, tutorials, and tools</li>
+</ul>
+
+</body>
+</html>
