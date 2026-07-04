@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 5: Type Manipulation</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>Lesson 5: Type Manipulation</h1>
+<p class="lesson-meta">Lesson 5 of ? &middot; ~25 minutes</p>
+
+<p>
+  So far you've <em>written</em> types. Now you'll learn to <strong>derive</strong>
+  them — create new types from existing ones. This is where TypeScript becomes a
+  genuine tool for making illegal states unrepresentable.
+</p>
+
+<h2><code>typeof</code> — Grab a Value's Type</h2>
+<p>At the type level, <code>typeof</code> extracts the type from a runtime value.</p>
+
+<pre><code>const config = { url: "https://api.example.com", timeout: 5000 };
+
+// Derive the type from the value
+type Config = typeof config;
+// { url: string; timeout: number; }</code></pre>
+
+<p>This is invaluable for inferring types from constants or libraries where types aren't exported.</p>
+
+<h2><code>keyof</code> — Get the Keys of a Type</h2>
+<p><code>keyof T</code> returns a union of the keys (property names) of type <code>T</code>.</p>
+
+<pre><code>interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+type UserKeys = keyof User;
+// "id" | "name" | "email"</code></pre>
+
+<p>Useful for writing functions that operate on object properties safely:</p>
+
+<pre><code>function getProperty&lt;T, K extends keyof T&gt;(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+const user: User = { id: 1, name: "Alice", email: "a@b.com" };
+getProperty(user, "name");  // type: string
+getProperty(user, "id");    // type: number
+// getProperty(user, "age"); // Error! "age" not in keyof User</code></pre>
+
+<h2>Indexed Access Types — <code>T[K]</code></h2>
+<p>You can access a property's type using bracket notation, just like at runtime:</p>
+
+<pre><code>type UserNameType = User["name"];  // string
+type UserIdType = User["id"];      // number
+type NameOrEmail = User["name" | "email"];  // string</code></pre>
+
+<div class="callout tip">
+  <strong>Indexed access + keyof = building block</strong> for all advanced type
+  manipulation. Every utility type is built from these primitives.
+</div>
+
+<h2>Mapped Types — Transform Every Property</h2>
+<p>
+  A mapped type iterates over keys and transforms each property. The syntax
+  looks like a type-level <code>for...in</code> loop:
+</p>
+
+<pre><code>type Readonly&lt;T&gt; = {
+  readonly [K in keyof T]: T[K];
+};
+
+type Optional&lt;T&gt; = {
+  [K in keyof T]?: T[K];
+};
+
+// Usage
+type ReadonlyUser = Readonly&lt;User&gt;;
+// { readonly id: number; readonly name: string; readonly email: string; }</code></pre>
+
+<p>You can also transform the value type:</p>
+
+<pre><code>type Nullable&lt;T&gt; = {
+  [K in keyof T]: T[K] | null;
+};</code></pre>
+
+<h2>Conditional Types — Type-Level <code>if</code></h2>
+<p>Conditional types select between two types based on a condition:</p>
+
+<pre><code>type IsString&lt;T&gt; = T extends string ? "yes" : "no";
+
+type A = IsString&lt;"hello"&gt;;  // "yes"
+type B = IsString&lt;42&gt;;       // "no"</code></pre>
+
+<p>A practical pattern — extracting the resolved type from a Promise:</p>
+
+<pre><code>type Unwrap&lt;T&gt; = T extends Promise&lt;infer U&gt; ? U : T;
+
+type A = Unwrap&lt;Promise&lt;string&gt;&gt;;  // string
+type B = Unwrap&lt;number&gt;;            // number (passes through)</code></pre>
+
+<p>The <code>infer</code> keyword introduces a new type variable that captures the inner type of <code>Promise&lt;U&gt;</code>.</p>
+
+<h2>Putting It Together: A Deep Partial</h2>
+<p>Here's a recursive mapped type that makes all nested properties optional:</p>
+
+<pre><code>type DeepPartial&lt;T&gt; = T extends object
+  ? { [K in keyof T]?: DeepPartial&lt;T[K]&gt; }
+  : T;
+
+interface Config {
+  server: { host: string; port: number };
+  db: { url: string; poolSize: number };
+}
+
+type PartialConfig = DeepPartial&lt;Config&gt;;
+// { server?: { host?: string; port?: number }; db?: { url?: string; poolSize?: number } }</code></pre>
+
+<hr style="margin:2rem 0;" />
+
+<h2>Check Your Understanding</h2>
+
+<div class="quiz-question" data-answer="A">
+  <p>What does <code>keyof { name: string; age: number }</code> resolve to?</p>
+  <label class="quiz-option"><input type="radio" name="q1" value="A"> <code>"name" | "age"</code></label>
+  <label class="quiz-option"><input type="radio" name="q1" value="B"> <code>string | number</code></label>
+  <label class="quiz-option"><input type="radio" name="q1" value="C"> <code>["name", "age"]</code></label>
+  <label class="quiz-option"><input type="radio" name="q1" value="D"> <code>object</code></label>
+</div>
+
+<div class="quiz-question" data-answer="C">
+  <p>What does <code>type Unwrap&lt;T&gt; = T extends Promise&lt;infer U&gt; ? U : T</code> do?</p>
+  <label class="quiz-option"><input type="radio" name="q2" value="A"> Wraps a type in Promise</label>
+  <label class="quiz-option"><input type="radio" name="q2" value="B"> Makes all properties optional</label>
+  <label class="quiz-option"><input type="radio" name="q2" value="C"> Extracts the inner type from a Promise, or passes through non-Promise types</label>
+  <label class="quiz-option"><input type="radio" name="q2" value="D"> Returns a boolean</label>
+</div>
+
+<div class="quiz-question" data-answer="B">
+  <p>In <code>type Nullable&lt;T&gt; = { [K in keyof T]: T[K] | null }</code>, what does <code>[K in keyof T]</code> do?</p>
+  <label class="quiz-option"><input type="radio" name="q3" value="A"> Creates a new array type</label>
+  <label class="quiz-option"><input type="radio" name="q3" value="B"> Iterates over each key in T and applies the transform</label>
+  <label class="quiz-option"><input type="radio" name="q3" value="C"> Removes all keys from T</label>
+  <label class="quiz-option"><input type="radio" name="q3" value="D"> Makes all properties required</label>
+</div>
+
+<hr style="margin:2rem 0;" />
+
+<h2>Your Turn: Exercise — Type-Safe Event Emitter</h2>
+
+<div class="exercise">
+  <h3>Exercise: Type-Safe Event Emitter</h3>
+  <p>
+    Open <code>src/0005-event-emitter.ts</code> and implement a type-safe event
+    emitter using mapped types, <code>keyof</code>, and conditional types.
+  </p>
+
+  <p><strong>Requirements:</strong></p>
+  <ol>
+    <li>Define an <code>EventMap</code> interface that maps event names to their payload types:
+      <pre><code>interface MyEvents {
+  userLogin: { userId: string };
+  pageView: { path: string; referrer?: string };
+  error: { message: string; code: number };
+}</code></pre>
+    </li>
+    <li>Define <code>type Listener&lt;T&gt; = (payload: T) =&gt; void</code></li>
+    <li>Implement a generic <code>EventEmitter&lt;T&gt;</code> class with methods:
+      <ul>
+        <li><code>on&lt;K extends keyof T&gt;(event: K, listener: Listener&lt;T[K]&gt;): void</code></li>
+        <li><code>emit&lt;K extends keyof T&gt;(event: K, payload: T[K]): void</code></li>
+      </ul>
+    </li>
+    <li>Test by creating an emitter of <code>MyEvents</code>, subscribing, and emitting</li>
+  </ol>
+
+  <p><strong>Bonus (optional):</strong></p>
+  <ul>
+    <li>Add <code>off&lt;K extends keyof T&gt;(event: K, listener: Listener&lt;T[K]&gt;): void</code> to remove listeners</li>
+    <li>Add <code>once&lt;K extends keyof T&gt;(event: K, listener: Listener&lt;T[K]&gt;): void</code> that fires only once then removes itself</li>
+  </ul>
+
+  <p><strong>Run it:</strong> <code>npx tsx src/0005-event-emitter.ts</code></p>
+</div>
+
+<hr style="margin:2rem 0;" />
+
+<h2>Reference</h2>
+<ul>
+  <li><a href="../reference/typescript-syntax.html">TypeScript Syntax Reference</a></li>
+  <li><a href="../GLOSSARY.md">Glossary</a></li>
+  <li><a href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html" target="_blank">Handbook: keyof</a></li>
+  <li><a href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html" target="_blank">Handbook: Mapped Types</a></li>
+  <li><a href="https://www.typescriptlang.org/docs/handbook/2/conditional-types.html" target="_blank">Handbook: Conditional Types</a></li>
+</ul>
+
+<h2>Follow Up</h2>
+<p>
+  Questions? Confused about anything? Stuck on the exercise?
+  Ask me — I'm your teacher for this session.
+</p>
+
+</body>
+</html>

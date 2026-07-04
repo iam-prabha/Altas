@@ -32,7 +32,7 @@ function map<T, U, E>(
 }
 
 // Bonus: unwrapOr
-function unwrapOr<T>(result: Result<T>, fallback: T): T {
+function unwrapOr<T, E, F>(result: Result<T, E>, fallback: F): T | F {
   if (result.ok) {
     return result.value;
   }
