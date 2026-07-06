@@ -3,7 +3,7 @@
 ## 📂 Directory Organization
 
 ```
-02-Areas/llm/
+engineering/llm/
 ├── README.md                                 (Start here! Main index & guide)
 ├── STRUCTURE.md                              (This file - file organization)
 │
@@ -21,16 +21,13 @@
 ├── glossary.md                               (Complete terminology reference)
 ├── code-examples.md                          (7 pedagogical Python examples)
 ├── summary.md                                (Key takeaways from all modules)
-│
-└── Original (Combined)
-    └── llm.md                                (Full combined curriculum, 1910 lines)
 ```
 
 ## 📊 File Statistics
 
 | File | Lines | Size | Purpose |
 |------|-------|------|---------|
-| **README.md** | 173 | 6.9K | Navigation guide & curriculum overview |
+| **README.md** | 170 | 6.9K | Navigation guide & curriculum overview |
 | **01-what-is-an-llm.md** | 73 | 4.3K | Definition, characteristics, history |
 | **02-neural-network-fundamentals.md** | 148 | 6.0K | Neurons, layers, backprop |
 | **03-the-transformer-architecture.md** | 196 | 6.2K | Tokenization, embeddings, attention |
@@ -39,13 +36,12 @@
 | **06-advanced-techniques-model-variants.md** | 211 | 6.8K | MoE, base/instruct/reasoning models |
 | **07-evaluation-benchmarking.md** | 48 | 4.2K | Evaluation strategies, benchmarks |
 | **08-practical-considerations.md** | 264 | 7.7K | Hallucinations, costs, safety, latency |
-| **glossary.md** | 163 | 5.6K | 50+ key terms with definitions |
-| **code-examples.md** | 319 | 10K | 7 implementations of core algorithms |
-| **summary.md** | 43 | 1.4K | Complete picture summary |
+| **glossary.md** | 112 | 5.6K | 50+ key terms with definitions |
+| **code-examples.md** | 301 | 10K | 7 implementations of core algorithms |
+| **summary.md** | 37 | 1.4K | Complete picture summary |
 | **STRUCTURE.md** | This file | — | File organization guide |
-| **llm.md** | 1910 | 66K | Original combined version (for reference) |
 
-**Total Curriculum**: ~3,933 lines across all files
+**Total Curriculum**: ~2,021 lines across all files
 
 ## 🎯 How to Navigate
 
@@ -66,9 +62,6 @@
 - **[glossary.md](glossary.md)** - Quick term lookups
 - **[code-examples.md](code-examples.md)** - Implementation examples
 - **[summary.md](summary.md)** - Key takeaways
-
-### Original Combined Version
-- **[llm.md](llm.md)** - Full curriculum in one file (for archival or offline reference)
 
 ## 🚀 Learning Paths
 
@@ -115,9 +108,9 @@ Example: `03-the-transformer-architecture.md` = Module 3
 
 To maintain consistency across files:
 1. Edit the individual module file (e.g., `03-the-transformer-architecture.md`)
-2. If major changes, regenerate `llm.md` by concatenating all modules
-3. Update `summary.md` with any new key points
-4. Update `README.md` if structure changes
+2. Update `summary.md` with any new key points
+3. Update `README.md` if structure changes
+4. Update this file if file structure or statistics change
 
 ## 📖 Total Reading Time
 
@@ -134,6 +127,6 @@ To maintain consistency across files:
 
 ---
 
-**Last Updated**: 2026-06-21  
-**Version**: 1.0 (Split from monolithic llm.md)  
+**Last Updated**: 2026-07-06  
+**Version**: 1.1  
 **Status**: Complete and ready to use
