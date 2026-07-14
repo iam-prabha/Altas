@@ -10,38 +10,38 @@
 
 | Phase | Topic | Modules | Done |
 |-------|-------|---------|------|
-| 1 | Python + Async Engineering | 8 | 8 |
-| 2 | Mental Model of LLMs | 5 | 3 |
+| 1 | Python + Async Engineering | 8 | 0 |
+| 2 | Mental Model of LLMs | 5 | 0 |
 | 3 | Prompt Engineering & APIs | 7 | 0 |
-| 4 | RAG & Ingestion Pipeline | 9 | 2 |
+| 4 | RAG & Ingestion Pipeline | 9 | 0 |
 | 5 | Tools, MCP & Single Agents | 8 | 0 |
 | 6 | Memory & Context Engineering | 7 | 0 |
 | 7 | Multi-Agent Orchestration | 8 | 0 |
 | 8 | Guardrails & LLMOps | 4 | 0 |
 | 9 | Cloud Infra & Deployment | 6 | 0 |
 
-**Total:** 62 modules | **Completed:** 13 | **Capstones:** 0/3
+**Total:** 62 modules | **Completed:** 0 | **Capstones:** 0/3
 
 ---
 
 ## Phase 1: Python + Async Engineering
 
-- [x] 1.1 Core Python
-- [x] 1.2 Object-Oriented Python
-- [x] 1.3 Data Structures
-- [x] 1.4 Error & File Handling
-- [x] 1.5 HTTP APIs
-- [x] 1.6 Database Connectivity
-- [x] 1.7 FastAPI
-- [x] 1.8 Async Programming
+- [ ] 1.1 Core Python
+- [ ] 1.2 Object-Oriented Python
+- [ ] 1.3 Data Structures
+- [ ] 1.4 Error & File Handling
+- [ ] 1.5 HTTP APIs
+- [ ] 1.6 Database Connectivity
+- [ ] 1.7 FastAPI
+- [ ] 1.8 Async Programming
 
 ---
 
 ## Phase 2: Mental Model of LLMs
 
-- [x] 2.1 What an LLM actually is
-- [x] 2.2 How an LLM thinks
-- [x] 2.3 Reasoning vs base models
+- [ ] 2.1 What an LLM actually is
+- [ ] 2.2 How an LLM thinks
+- [ ] 2.3 Reasoning vs base models
 - [ ] 2.4 Reading model evals & benchmarks
 - [ ] 2.5 Comparing major models
 
@@ -61,8 +61,8 @@
 
 ## Phase 4: RAG & Ingestion Pipeline
 
-- [x] 4.1 Why RAG exists
-- [x] 4.2 Embeddings
+- [ ] 4.1 Why RAG exists
+- [ ] 4.2 Embeddings
 - [ ] 4.3 Document ingestion pipeline
 - [ ] 4.4 Chunking strategies
 - [ ] 4.5 Chunk enrichment
