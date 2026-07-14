@@ -8,23 +8,23 @@
 
 ## Progress Overview
 
-| Phase | Topic | Weeks | Modules | Done |
-|-------|-------|-------|---------|------|
-| 1 | Python + Async Engineering | 1-3 | 8 | 8 |
-| 2 | Mental Model of LLMs | 4 | 5 | 3 |
-| 3 | Prompt Engineering & APIs | 5-7 | 7 | 0 |
-| 4 | RAG & Ingestion Pipeline | 8-12 | 9 | 2 |
-| 5 | Tools, MCP & Single Agents | 13-16 | 8 | 0 |
-| 6 | Memory & Context Engineering | 17-19 | 7 | 0 |
-| 7 | Multi-Agent Orchestration | 20-22 | 8 | 0 |
-| 8 | Guardrails & LLMOps | 23-24 | 4 | 0 |
-| 9 | Cloud Infra & Deployment | 25-26 | 6 | 0 |
+| Phase | Topic | Modules | Done |
+|-------|-------|---------|------|
+| 1 | Python + Async Engineering | 8 | 8 |
+| 2 | Mental Model of LLMs | 5 | 3 |
+| 3 | Prompt Engineering & APIs | 7 | 0 |
+| 4 | RAG & Ingestion Pipeline | 9 | 2 |
+| 5 | Tools, MCP & Single Agents | 8 | 0 |
+| 6 | Memory & Context Engineering | 7 | 0 |
+| 7 | Multi-Agent Orchestration | 8 | 0 |
+| 8 | Guardrails & LLMOps | 4 | 0 |
+| 9 | Cloud Infra & Deployment | 6 | 0 |
 
 **Total:** 62 modules | **Completed:** 13 | **Capstones:** 0/3
 
 ---
 
-## Phase 1: Python + Async Engineering (Weeks 1-3)
+## Phase 1: Python + Async Engineering
 
 - [x] 1.1 Core Python
 - [x] 1.2 Object-Oriented Python
@@ -37,7 +37,7 @@
 
 ---
 
-## Phase 2: Mental Model of LLMs (Week 4)
+## Phase 2: Mental Model of LLMs
 
 - [x] 2.1 What an LLM actually is
 - [x] 2.2 How an LLM thinks
@@ -47,7 +47,7 @@
 
 ---
 
-## Phase 3: Prompt Engineering & APIs (Weeks 5-7)
+## Phase 3: Prompt Engineering & APIs
 
 - [ ] 3.1 UI vs API — the hinge moment
 - [ ] 3.2 Calling LLMs via API
@@ -59,7 +59,7 @@
 
 ---
 
-## Phase 4: RAG & Ingestion Pipeline (Weeks 8-12)
+## Phase 4: RAG & Ingestion Pipeline
 
 - [x] 4.1 Why RAG exists
 - [x] 4.2 Embeddings
@@ -74,7 +74,7 @@
 
 ---
 
-## Phase 5: Tools, MCP & Single Agents (Weeks 13-16)
+## Phase 5: Tools, MCP & Single Agents
 
 - [ ] 5.1 Function calling / tool use
 - [ ] 5.2 Tool design principles
@@ -87,7 +87,7 @@
 
 ---
 
-## Phase 6: Memory & Context Engineering (Weeks 17-19)
+## Phase 6: Memory & Context Engineering
 
 - [ ] 6.1 Context window as working memory
 - [ ] 6.2 Context structure — SYSTEM / CONTEXT / USER
@@ -99,7 +99,7 @@
 
 ---
 
-## Phase 7: Multi-Agent Orchestration (Weeks 20-22)
+## Phase 7: Multi-Agent Orchestration
 
 - [ ] 7.1 When to go multi-agent (and when not to)
 - [ ] 7.2 LangGraph fundamentals
@@ -113,7 +113,7 @@
 
 ---
 
-## Phase 8: Guardrails & LLMOps (Weeks 23-24)
+## Phase 8: Guardrails & LLMOps
 
 - [ ] 8.1 Three-layer guardrail architecture
 - [ ] 8.2 AWS Bedrock Guardrails
@@ -122,7 +122,7 @@
 
 ---
 
-## Phase 9: Cloud Infra & Deployment (Weeks 25-26)
+## Phase 9: Cloud Infra & Deployment
 
 - [ ] 9.1 Storage & data
 - [ ] 9.2 Compute
@@ -144,16 +144,16 @@
 
 ## Weekly Log
 
-| Week | Focus | Hours | Shipped | Notes |
-|------|-------|-------|---------|-------|
-| 1-3 | Python + Async | | | |
-| 4 | LLM Mental Model | | | |
-| 5-7 | Prompt Engineering | | | |
-| 8-12 | RAG | | | |
-| 13-16 | Tools/Agents | | | |
-| 17-19 | Memory | | | |
-| 20-22 | Multi-Agent | | | |
-| 23-24 | Guardrails/Ops | | | |
-| 25-26 | Cloud/Deploy | | | |
+| Phase | Focus | Hours | Shipped | Notes |
+|-------|-------|-------|---------|-------|
+| 1 | Python + Async | | | |
+| 2 | LLM Mental Model | | | |
+| 3 | Prompt Engineering | | | |
+| 4 | RAG | | | |
+| 5 | Tools/Agents | | | |
+| 6 | Memory | | | |
+| 7 | Multi-Agent | | | |
+| 8 | Guardrails/Ops | | | |
+| 9 | Cloud/Deploy | | | |
 
-> Update weekly: fill in hours, what you shipped, blockers. Keep it honest.
+> Update per phase: fill in hours, what you shipped, blockers. Keep it honest.
