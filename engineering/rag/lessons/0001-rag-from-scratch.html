@@ -14,10 +14,10 @@
 
 <h1>RAG from Scratch</h1>
 
-<p class="text-muted mb-2">Build your first working Retrieval-Augmented Generation pipeline &mdash; with no frameworks, just Python.</p>
+<p class="text-muted mb-2">Build your first working Retrieval-Augmented Generation pipeline &mdash; with no frameworks, just TypeScript.</p>
 
 <h2>What you&rsquo;ll build</h2>
-<p>By the end of this lesson you&rsquo;ll have a <code>rag.py</code> that:</p>
+<p>By the end of this lesson you&rsquo;ll have a <code>rag.ts</code> that:</p>
 <ol>
   <li>Loads a document and <strong>chunks</strong> it</li>
   <li>Turns each chunk into an <strong>embedding</strong> (a vector)</li>
@@ -67,7 +67,10 @@
 
 <h2>Setup</h2>
 <p>Install dependencies:</p>
-<pre><code>pip install sentence-transformers faiss-cpu numpy openai requests</code></pre>
+<pre><code>npm install @xenova/transformers openai</code></pre>
+
+<p>Create a <code>tsconfig.json</code> for running TypeScript directly:</p>
+<pre><code>npx tsc --init --target es2022 --moduleResolution bundler</code></pre>
 
 <p>If you want to use a local LLM, install <a href="https://ollama.ai/">Ollama</a> and pull a model:</p>
 <pre><code>ollama pull llama3.2</code></pre>
@@ -96,23 +99,26 @@ then concatenated with the query and passed to the LLM for generation.</code></p
   <p>Documents are too long to fit in an LLM&rsquo;s context window. We split them into smaller pieces (chunks) that can be retrieved and fed to the model.</p>
   <p>A simple chunking strategy: split by character count with overlap so no meaning is lost at boundaries.</p>
 
-  <pre><code>def chunk_text(text, chunk_size=500, overlap=50):
-    chunks = []
-    start = 0
-    while start &lt; len(text):
-        end = min(start + chunk_size, len(text))
-        chunks.append(text[start:end])
-        start += chunk_size - overlap
-    return chunks
+  <pre><code>import fs from "fs";
 
-with open("sample.txt") as f:
-    text = f.read()
+function chunkText(text: string, chunkSize = 500, overlap = 50): string[] {
+  const chunks: string[] = [];
+  let start = 0;
+  while (start &lt; text.length) {
+    const end = Math.min(start + chunkSize, text.length);
+    chunks.push(text.slice(start, end));
+    start += chunkSize - overlap;
+  }
+  return chunks;
+}
 
-chunks = chunk_text(text)
-print(f"Split into {len(chunks)} chunks")
-for i, c in enumerate(chunks):
-    print(f"--- Chunk {i} ({len(c)} chars) ---")
-    print(c[:100] + "...")</code></pre>
+const text = fs.readFileSync("sample.txt", "utf-8");
+const chunks = chunkText(text);
+console.log(`Split into ${chunks.length} chunks`);
+chunks.forEach((c, i) =&gt; {
+  console.log(`--- Chunk ${i} (${c.length} chars) ---`);
+  console.log(c.slice(0, 100) + "...");
+});</code></pre>
 </div>
 
 <h2>Step 2: Embeddings</h2>
@@ -121,15 +127,16 @@ for i, c in enumerate(chunks):
   <span class="step-number">Step 2</span>
   <p>Computers don&rsquo;t understand text &mdash; they understand numbers. An <strong>embedding</strong> is a list of numbers (a vector) that captures the <em>meaning</em> of a piece of text. Similar texts have similar vectors.</p>
 
-  <pre><code>from sentence_transformers import SentenceTransformer
+  <pre><code>import { pipeline } from "@xenova/transformers";
 
-# Load a small, fast embedding model
-model = SentenceTransformer("all-MiniLM-L6-v2")
+// Load a small, fast embedding model
+const model = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
 
-# Turn chunks into vectors
-chunk_embeddings = model.encode(chunks)
-print(f"Embedding shape: {chunk_embeddings.shape}")
-# (num_chunks, 384) — each chunk becomes a 384-dimensional vector</code></pre>
+// Turn chunks into vectors
+const result = await model(chunks, { pooling: "mean", normalize: true });
+const chunkEmbeddings: number[][] = result.tolist();
+console.log(`Embedding shape: [${chunkEmbeddings.length}, ${chunkEmbeddings[0].length}]`);
+// [num_chunks, 384] — each chunk becomes a 384-dimensional vector</code></pre>
 
   <p class="sidenote"><code>all-MiniLM-L6-v2</code> is a popular embedding model. It&rsquo;s small (80 MB), fast, and gives decent quality. You can swap it for stronger models (e.g., <code>BAAI/bge-large-en-v1.5</code>) later.</p>
 </div>
@@ -140,28 +147,38 @@ print(f"Embedding shape: {chunk_embeddings.shape}")
   <span class="step-number">Step 3</span>
   <p>Now we need to find the chunks most relevant to a user&rsquo;s question. We embed the question, then find the chunks whose vectors are closest to it. FAISS (Facebook AI Similarity Search) does this efficiently.</p>
 
-  <pre><code>import faiss
-import numpy as np
+  <pre><code>function cosineSimilarity(a: number[], b: number[]): number {
+  let dotProduct = 0, normA = 0, normB = 0;
+  for (let i = 0; i &lt; a.length; i++) {
+    dotProduct += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
 
-# Build a FAISS index
-dimension = chunk_embeddings.shape[1]  # 384
-index = faiss.IndexFlatL2(dimension)
-index.add(chunk_embeddings)
+async function retrieve(query: string, k = 2): Promise&lt;string[]&gt; {
+  // Embed the query
+  const queryResult = await model([query], { pooling: "mean", normalize: true });
+  const queryVec: number[] = queryResult.tolist()[0];
 
-def retrieve(query, k=2):
-    # Embed the query
-    query_vec = model.encode([query])
-    # Search
-    distances, indices = index.search(query_vec, k)
-    results = [chunks[i] for i in indices[0]]
-    return results
+  // Find k most similar chunks by cosine similarity
+  const similarities = chunkEmbeddings.map(emb =&gt; cosineSimilarity(queryVec, emb));
+  const topK = similarities
+    .map((sim, i) =&gt; ({ sim, i }))
+    .sort((a, b) =&gt; b.sim - a.sim)
+    .slice(0, k)
+    .map(x =&gt; x.i);
 
-# Try it!
-query = "How does RAG reduce hallucinations?"
-results = retrieve(query)
-print("Retrieved chunks:")
-for r in results:
-    print(f"  • {r[:80]}...")</code></pre>
+  return topK.map(i =&gt; chunks[i]);
+}
+
+// Try it!
+const results = await retrieve("How does RAG reduce hallucinations?");
+console.log("Retrieved chunks:");
+for (const r of results) {
+  console.log(`  • ${r.slice(0, 80)}...`);
+}</code></pre>
 
   <p>L2 (Euclidean distance) is the simplest similarity metric. In practice, <strong>cosine similarity</strong> is more common for text embeddings &mdash; we&rsquo;ll cover that in a later lesson.</p>
 </div>
@@ -173,112 +190,149 @@ for r in results:
   <p>Finally, we feed the retrieved context + the original question to an LLM. The LLM uses the context to generate a grounded answer.</p>
 
   <p><strong>Option A: Ollama (local, free)</strong></p>
-  <pre><code>import requests
-import json
-
-def generate_ollama(query, context, model="llama3.2"):
-    prompt = f"""Answer the question using ONLY the provided context.
+  <pre><code>async function generateOllama(
+  query: string,
+  context: string[],
+  model = "llama3.2"
+): Promise&lt;string&gt; {
+  const prompt = `Answer the question using ONLY the provided context.
 
 Context:
-{chr(10).join(context)}
+${context.join("\n")}
 
-Question: {query}
+Question: ${query}
 
-Answer:"""
-    response = requests.post("http://localhost:11434/api/generate",
-        json={"model": model, "prompt": prompt, "stream": False})
-    return response.json()["response"]
+Answer:`;
+  const response = await fetch("http://localhost:11434/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model, prompt, stream: false }),
+  });
+  const data = await response.json();
+  return data.response;
+}
 
-# Usage
-context = retrieve(query)
-answer = generate_ollama(query, context)
-print("Answer:", answer)</code></pre>
+// Usage
+const context = await retrieve(query);
+const answer = await generateOllama(query, context);
+console.log("Answer:", answer);</code></pre>
 
   <p><strong>Option B: OpenAI API</strong></p>
-  <pre><code>from openai import OpenAI
+  <pre><code>import OpenAI from "openai";
 
-client = OpenAI()  # requires OPENAI_API_KEY env var
+const client = new OpenAI();  // requires OPENAI_API_KEY env var
 
-def generate_openai(query, context, model="gpt-4o-mini"):
-    prompt = f"Answer the question using ONLY the provided context.\n\nContext:\n{chr(10).join(context)}\n\nQuestion: {query}\n\nAnswer:"
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content
+async function generateOpenAI(
+  query: string,
+  context: string[],
+  model = "gpt-4o-mini"
+): Promise&lt;string&gt; {
+  const prompt = `Answer the question using ONLY the provided context.\n\nContext:\n${context.join("\n")}\n\nQuestion: ${query}\n\nAnswer:`;
+  const response = await client.chat.completions.create({
+    model,
+    messages: [{ role: "user", content: prompt }],
+  });
+  return response.choices[0]!.message.content ?? "";
+}
 
-# Usage
-answer = generate_openai(query, context)
-print("Answer:", answer)</code></pre>
+// Usage
+const answer = await generateOpenAI(query, context);
+console.log("Answer:", answer);</code></pre>
 
   <p class="sidenote">The prompt instructs the LLM to &ldquo;answer using ONLY the provided context.&rdquo; This is critical — without it, the model may fall back on its training data and hallucinate.</p>
 </div>
 
 <h2>Putting It All Together</h2>
-<p>Here&rsquo;s the full <code>rag.py</code>:</p>
-<pre><code>import requests
-import json
-import os
-import numpy as np
-from sentence_transformers import SentenceTransformer
-import faiss
+<p>Here&rsquo;s the full <code>rag.ts</code>:</p>
+<pre><code>import fs from "fs";
+import readline from "readline";
+import { pipeline } from "@xenova/transformers";
 
-# --- Step 1: Load & Chunk ---
-def load_and_chunk(path, chunk_size=500, overlap=50):
-    with open(path) as f:
-        text = f.read()
-    chunks = []
-    start = 0
-    while start &lt; len(text):
-        end = min(start + chunk_size, len(text))
-        chunks.append(text[start:end])
-        start += chunk_size - overlap
-    return chunks
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+const prompt = (q: string) =&gt; new Promise&lt;string&gt;(resolve =&gt; rl.question(q, resolve));
 
-# --- Step 2: Embed ---
-print("Loading embedding model...")
-model = SentenceTransformer("all-MiniLM-L6-v2")
-chunks = load_and_chunk("sample.txt")
-chunk_embeddings = model.encode(chunks)
-print(f"Indexing {len(chunks)} chunks...")
+// --- Step 1: Load &amp; Chunk ---
+function loadAndChunk(path: string, chunkSize = 500, overlap = 50): string[] {
+  const text = fs.readFileSync(path, "utf-8");
+  const chunks: string[] = [];
+  let start = 0;
+  while (start &lt; text.length) {
+    const end = Math.min(start + chunkSize, text.length);
+    chunks.push(text.slice(start, end));
+    start += chunkSize - overlap;
+  }
+  return chunks;
+}
 
-# --- Step 3: Index & Search ---
-dimension = chunk_embeddings.shape[1]
-index = faiss.IndexFlatL2(dimension)
-index.add(chunk_embeddings)
+// --- Step 2: Embed ---
+console.log("Loading embedding model...");
+const model = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+const chunks = loadAndChunk("sample.txt");
+const result = await model(chunks, { pooling: "mean", normalize: true });
+const chunkEmbeddings: number[][] = result.tolist();
+console.log(`Indexing ${chunks.length} chunks...`);
 
-def retrieve(query, k=2):
-    query_vec = model.encode([query])
-    distances, indices = index.search(query_vec, k)
-    return [chunks[i] for i in indices[0]]
+// --- Step 3: Search ---
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dotProduct = 0, normA = 0, normB = 0;
+  for (let i = 0; i &lt; a.length; i++) {
+    dotProduct += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
 
-# --- Step 4: Generate ---
-def generate(query, context, backend="ollama"):
-    if backend == "ollama":
-        prompt = f"Answer using ONLY the context.\n\nContext:\n{chr(10).join(context)}\n\nQuestion: {query}\n\nAnswer:"
-        resp = requests.post("http://localhost:11434/api/generate",
-            json={"model": "llama3.2", "prompt": prompt, "stream": False})
-        return resp.json()["response"]
-    else:
-        from openai import OpenAI
-        client = OpenAI()
-        prompt = f"Answer using ONLY the context.\n\nContext:\n{chr(10).join(context)}\n\nQuestion: {query}\n\nAnswer:"
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return resp.choices[0].message.content
+async function retrieve(query: string, k = 2): Promise&lt;string[]&gt; {
+  const queryResult = await model([query], { pooling: "mean", normalize: true });
+  const queryVec: number[] = queryResult.tolist()[0];
+  const similarities = chunkEmbeddings.map(emb =&gt; cosineSimilarity(queryVec, emb));
+  const topK = similarities
+    .map((sim, i) =&gt; ({ sim, i }))
+    .sort((a, b) =&gt; b.sim - a.sim)
+    .slice(0, k)
+    .map(x =&gt; x.i);
+  return topK.map(i =&gt; chunks[i]);
+}
 
-# --- Run ---
-if __name__ == "__main__":
-    query = input("Ask a question about your document: ")
-    context = retrieve(query)
-    print("\\n--- Retrieved Context ---")
-    for c in context:
-        print(f"  • {c[:100]}...")
-    print("\\n--- Generating Answer ---")
-    answer = generate(query, context, backend="ollama")  # change to "openai" if preferred
-    print(f"\\nAnswer: {answer}")</code></pre>
+// --- Step 4: Generate ---
+async function generate(
+  query: string,
+  context: string[],
+  backend: "ollama" | "openai" = "ollama"
+): Promise&lt;string&gt; {
+  const promptText = `Answer using ONLY the context.\n\nContext:\n${context.join("\n")}\n\nQuestion: ${query}\n\nAnswer:`;
+
+  if (backend === "ollama") {
+    const resp = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "llama3.2", prompt: promptText, stream: false }),
+    });
+    const data = await resp.json();
+    return data.response;
+  } else {
+    const { default: OpenAI } = await import("openai");
+    const client = new OpenAI();
+    const resp = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: promptText }],
+    });
+    return resp.choices[0]!.message.content ?? "";
+  }
+}
+
+// --- Run ---
+const query = await prompt("Ask a question about your document: ");
+const context = await retrieve(query);
+console.log("\n--- Retrieved Context ---");
+for (const c of context) {
+  console.log(`  • ${c.slice(0, 100)}...`);
+}
+console.log("\n--- Generating Answer ---");
+const answer = await generate(query, context, "ollama");  // change to "openai" if preferred
+console.log(`\nAnswer: ${answer}`);
+rl.close();</code></pre>
 
 <hr>
 
@@ -318,10 +372,10 @@ if __name__ == "__main__":
 
 <h2>Your Turn</h2>
 <ol>
-  <li><strong>Run the code.</strong> Save the full script as <code>rag.py</code>, make sure <code>sample.txt</code> is in the same directory, and run <code>python rag.py</code>.</li>
+  <li><strong>Run the code.</strong> Save the full script as <code>rag.ts</code>, make sure <code>sample.txt</code> is in the same directory, and run <code>npx ts-node rag.ts</code> (or <code>npx tsx rag.ts</code>).</li>
   <li><strong>Ask a question.</strong> Start with &ldquo;How does RAG reduce hallucinations?&rdquo; &mdash; the answer should be in your document.</li>
   <li><strong>Try your own document.</strong> Replace <code>sample.txt</code> with any text file you have. See how the answers change.</li>
-  <li><strong>Experiment.</strong> Change <code>chunk_size</code> and <code>k</code> (number of retrieved chunks). How does it affect the answer quality?</li>
+  <li><strong>Experiment.</strong> Change <code>chunkSize</code> and <code>k</code> (number of retrieved chunks). How does it affect the answer quality?</li>
 </ol>
 
 <div class="callout">

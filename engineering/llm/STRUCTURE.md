@@ -19,7 +19,7 @@ engineering/llm/
 │
 ├── Reference Materials
 ├── glossary.md                               (Complete terminology reference)
-├── code-examples.md                          (7 pedagogical Python examples)
+├── code-examples.md                          (7 pedagogical TypeScript examples)
 ├── summary.md                                (Key takeaways from all modules)
 ```
 
@@ -37,11 +37,11 @@ engineering/llm/
 | **07-evaluation-benchmarking.md** | 48 | 4.2K | Evaluation strategies, benchmarks |
 | **08-practical-considerations.md** | 264 | 7.7K | Hallucinations, costs, safety, latency |
 | **glossary.md** | 112 | 5.6K | 50+ key terms with definitions |
-| **code-examples.md** | 301 | 10K | 7 implementations of core algorithms |
+| **code-examples.md** | 414 | 12K | 7 implementations of core algorithms |
 | **summary.md** | 37 | 1.4K | Complete picture summary |
 | **STRUCTURE.md** | This file | — | File organization guide |
 
-**Total Curriculum**: ~2,021 lines across all files
+**Total Curriculum**: ~2,134 lines across all files
 
 ## 🎯 How to Navigate
 
@@ -91,7 +91,7 @@ README.md → summary.md → glossary.md
 ✅ **Modular Design** - Read modules independently or sequentially  
 ✅ **Clear Prerequisites** - Dependencies marked throughout  
 ✅ **Progressive Complexity** - Beginner → Intermediate → Advanced  
-✅ **Code Examples** - Pedagogical Python implementations  
+✅ **Code Examples** - Pedagogical TypeScript implementations  
 ✅ **Comprehensive Glossary** - 50+ terms defined  
 ✅ **Cross-references** - Links between related concepts  
 ✅ **Key Takeaways** - Summary boxes in each module  

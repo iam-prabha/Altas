@@ -34,11 +34,11 @@ A neuron performs these steps:
 3. **Output**: Pass the result to the next layer or as final output
 
 Example with ReLU activation:
-```python
-def neuron(inputs, weights, bias):
-    z = sum(w * x for w, x in zip(weights, inputs)) + bias
-    return max(0, z)  # ReLU activation
-```
+```typescript
+function neuron(inputs: number[], weights: number[], bias: number): number {
+  const z = inputs.reduce((sum, x, i) => sum + x * weights[i], 0) + bias;
+  return Math.max(0, z);  // ReLU activation
+}
 
 ## Layers and Networks
 
@@ -86,21 +86,23 @@ The key algorithm for training: **backpropagation** (backprop).
 
 This is like tuning a complex machine: you measure how broken it is, figure out which parts caused the problem, and adjust them slightly.
 
-```python
-# Pseudocode for training loop
-for epoch in num_epochs:
-    for batch in training_data:
-        # Forward pass
-        prediction = network(batch)
-        loss = calculate_loss(prediction, batch.truth)
-        
-        # Backward pass (backpropagation)
-        gradients = backpropagate(loss, network)
-        
-        # Update weights
-        for weight in network.weights:
-            weight -= learning_rate * gradients[weight]
-```
+```typescript
+// Pseudocode for training loop
+for (let epoch = 0; epoch < numEpochs; epoch++) {
+  for (const batch of trainingData) {
+    // Forward pass
+    const prediction = network(batch);
+    const loss = calculateLoss(prediction, batch.truth);
+
+    // Backward pass (backpropagation)
+    const gradients = backpropagate(loss, network);
+
+    // Update weights
+    for (const weight of network.weights) {
+      weight -= learningRate * gradients[weight];
+    }
+  }
+}
 
 ### Key Training Concepts
 

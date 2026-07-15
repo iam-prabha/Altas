@@ -17,7 +17,7 @@
 
 **Reference Materials:**
 - [Glossary](glossary.md) — 50+ key terms with definitions
-- [Code Examples](code-examples.md) — Pedagogical Python pseudocode
+- [Code Examples](code-examples.md) — Pedagogical TypeScript pseudocode
 - [Summary & Key Takeaways](summary.md) — Quick reference
 
 **Total Time**: ~4-6 hours for complete read with examples
@@ -81,7 +81,7 @@ Module 8: Practical      →  Real-world tradeoffs
 - **Progressive complexity**: Each module builds on previous ones
 - **Intuition first**: Explanations before equations; visual descriptions
 - **Real examples**: Model examples (GPT-3, Claude, Gemini), scaling laws
-- **Code alongside theory**: 7 pedagogical Python pseudocode examples
+- **Code alongside theory**: 7 pedagogical TypeScript pseudocode examples
 
 ### Comprehensive Coverage
 - **1,900+ lines** of carefully written content
